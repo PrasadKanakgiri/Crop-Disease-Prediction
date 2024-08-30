@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .drop-zone {
+            width: 100%;
+            height: 300px;
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 20px 0;
+            transition: border-color 0.3s ease;
+            background-color: #e9f7ff;
+            position: relative;
+        }
+
+        .drop-zone.dragover {
+            border-color: #0056b3;
+            background-color: #cce5ff;
+        }
+
+        .drop-zone::after {
+            content: "Drag & Drop your image here";
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .result.error {
+            color: #e74c3c;
+        }
+
+        .result.success {
+            color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="drop-zone" id="drop-zone"></div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const resultDiv = document.getElementById('result');
+
+        dropZone.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', async (event) => {
+            event.preventDefault();
+            dropZone.classList.remove('dragover');
+
+            const file = event.dataTransfer.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/predict/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `Prediction: ${data.prediction}`;
+                resultDiv.classList.add('success');
+                resultDiv.classList.remove('error');
+            } catch (error) {
+                resultDiv.innerHTML = 'Error: Unable to make prediction.';
+                resultDiv.classList.add('error');
+                resultDiv.classList.remove('success');
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
